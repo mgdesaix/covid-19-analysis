@@ -10,6 +10,8 @@ Below I will pull the data from the NYT repository on github.  The two data sets
 ```{r, echo = F, message = F}
 library(tidyverse)
 library(urbnmapr)
+
+# Get COVID data from NYT's github page
 county.url <- "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv"
 covid.counties <- read_csv(url(county.url))
 

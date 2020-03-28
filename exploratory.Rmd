@@ -1,0 +1,123 @@
+---
+title: "Covid19"
+author: "Matt DeSaix"
+date: "3/28/2020"
+output: html_document
+---
+
+Below I will pull the data from the NYT repository on github.  The two data sets are state-level and county-level coronavirus cases and deaths.
+
+```{r, echo = F, message = F}
+library(tidyverse)
+library(urbnmapr)
+county.url <- "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv"
+covid.counties <- read_csv(url(county.url))
+
+state.url <- "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv"
+covid.states <- read_csv(url(state.url))
+```
+
+### Looking at some stats
+
+```{r}
+ggplot(co.counties, aes(x = date, y = cases)) +
+  geom_point(aes(color = county)) +
+  theme_bw()
+```
+
+
+
+```{r, echo = F}
+co.counties.death <- co.counties %>%
+  filter(deaths > 0)
+ggplot(co.counties.death, aes(x = date, y = deaths)) +
+  geom_point(position = position_jitter(w=0.1, h = 0.1),
+             aes(color = county, size  = 4), alpha = 0.75) +
+  theme_bw()
+```
+
+
+## Maps
+
+
+```{r, echo = F}
+countydata <- urbnmapr::countydata
+counties <- urbnmapr::counties %>%
+  mutate(fips = county_fips)
+
+full.covid.tib <- covid.counties %>%
+  filter(date == max(covid.counties$date)) %>%
+  right_join(counties, by = "fips") %>%
+  mutate(log_cases = log10(cases)) %>%
+  mutate(log_casesFull = replace_na(log_cases, 0))
+  
+
+full.covid.tib %>%
+  ggplot(aes(long, lat, group = group, fill = log_casesFull)) +
+  geom_polygon(color = NA) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Number of Coronavirus Cases (Log10)") +
+  theme_bw()
+  
+```
+
+### Covid by states
+
+```{r, echo = F}
+states <- urbnmapr::states %>%
+  mutate(fips = state_fips)
+
+full.covid.states <- covid.states %>%
+  filter(date == max(covid.states$date)) %>%
+  right_join(states, by = "fips") %>%
+  mutate(log_cases = log10(cases))
+
+
+full.covid.states %>%
+  ggplot(aes(long, lat, group = group, fill = log_cases)) +
+  geom_polygon(color = NA) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  theme(legend.title = element_text()) +
+  labs(fill = "Number of Coronavirus Cases (Log10)") +
+  theme_bw()
+```
+
+
+
+### Covid county points scaled
+
+i.e. remaking the NYT maps here
+
+``` {r, echo = F}
+
+county_location_cases <- full.covid.tib %>%
+  group_by(fips) %>%
+  summarise(mean_cases = mean(cases),
+            mean_logcases = mean(log_casesFull),
+            county_lat = mean(lat), 
+            county_long = mean(long)) %>%
+  filter(mean_cases != "NA")
+
+size_breaks <- c(1,10,50, 100, 500, 1000)
+
+full.covid.states %>%
+  ggplot() +
+  geom_polygon(aes(long, lat, group = group), 
+               fill="gray95", 
+               color = "gray70",
+               size = 0.1) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  geom_point(data = county_location_cases, 
+             aes(x = county_long, y = county_lat, size = mean_cases), 
+             color = "red4", 
+             fill = adjustcolor("red1", alpha.f = 0.25),
+             shape = 21) +
+  scale_size(breaks = size_breaks, range = c(.5,25)) +
+  theme_bw()
+```
+
+
+
+
+
+

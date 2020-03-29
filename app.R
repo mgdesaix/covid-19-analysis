@@ -82,6 +82,7 @@ ui <- fluidPage(
                                uiOutput("data_url"),
                                h3("Cases by U.S. Counties"),
                                plotOutput(outputId = "USmap"),
+                               plotOutput(outputId = "USmap2"),
                                h3("Cumulative Number of Cases and Deaths"),
                                plotOutput(outputId = "USgraphs_cumul"),
                                h3("Daily Addition of Cases and Deaths"),
@@ -167,6 +168,31 @@ server <- function(input, output) {
       scale_size(breaks = size_breaks, 
                  range = c(.5,25),
                  name = "Cases") +
+      theme_bw() +
+      theme(
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        legend.position = c(0.9, 0.4)
+      )
+  })
+  
+  output$USmap2 <- renderPlot({
+    full.covid.tib <- covid.counties %>%
+      filter(date == max(covid.counties$date)) %>%
+      right_join(counties, by = "fips") %>%
+      mutate(log_cases = log10(cases)) %>%
+      mutate(log_casesFull = replace_na(log_cases, 0))
+    
+    
+    full.covid.tib %>%
+      ggplot(aes(long, lat, group = group, fill = log_casesFull)) +
+      geom_polygon(color = NA) +
+      coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+      labs(fill = "Cases (Log10)") +
       theme_bw() +
       theme(
         panel.border = element_blank(),

@@ -111,7 +111,7 @@ full.covid.tib %>%
 
 
 full.covid.tib %>%
-  filter(state_name == "Colorado")
+  filter(state_name == "Colorado") %>%
   ggplot(aes(long, lat, group = group, fill = log_casesFull)) +
   geom_polygon(color = NA) +
   coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
@@ -173,8 +173,19 @@ full.covid.states %>%
              color = "red4", 
              fill = adjustcolor("red1", alpha.f = 0.25),
              shape = 21) +
-  scale_size(breaks = size_breaks, range = c(.5,25)) +
-  theme_bw()
+  scale_size(breaks = size_breaks, 
+             range = c(.5,25),
+             name = "Cases") +
+  theme_bw() +
+      theme(
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        legend.position = c(0.9, 0.4)
+      )
 ```
 
 

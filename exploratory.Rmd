@@ -19,7 +19,47 @@ state.url <- "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-
 covid.states <- read_csv(url(state.url))
 ```
 
-### Looking at some stats
+## Looking at some stats
+
+
+
+### United States cases and deaths
+
+```{r}
+daily.sum <- covid.states %>%
+  group_by(date) %>%
+  summarise(fullcases = sum(cases),
+            fulldeaths = sum(deaths))
+
+daily.sum %>%
+  ggplot() +
+  geom_point(aes(x = date, y = log10(fullcases), color = "Cases")) +
+  geom_point(aes(x = date, y = log10(fulldeaths), color = "Deaths")) +
+  xlab("Date") +
+  ylab("Cases and Deaths (Log10)") +
+  theme_bw() +
+  theme(legend.title = element_blank(),
+        legend.position = c(0.1, 0.85),
+        legend.box.background = element_rect(color = "black"))
+```
+
+
+```{r, echo = F}
+daily.sum %>%
+  ggplot() +
+  geom_point(aes(x = date, y = fullcases, color = "Cases")) +
+  geom_point(aes(x = date, y = fulldeaths, color = "Deaths")) +
+  xlab("Date") +
+  ylab("Cases and Deaths") +
+  theme_bw() +
+  theme(legend.title = element_blank(),
+        legend.position = c(0.1, 0.85),
+        legend.box.background = element_rect(color = "black"))
+```
+
+
+
+
 
 ```{r}
 covid.counties.co <- covid.counties %>%
@@ -99,7 +139,8 @@ county_location_cases <- full.covid.tib %>%
   summarise(mean_cases = mean(cases),
             mean_logcases = mean(log_casesFull),
             county_lat = mean(lat), 
-            county_long = mean(long)) %>%
+            county_long = mean(long),
+            state = unique(state)) %>%
   filter(mean_cases != "NA")
 
 size_breaks <- c(1,10,50, 100, 500, 1000)
@@ -121,6 +162,113 @@ full.covid.states %>%
 ```
 
 
+
+
+
+
+```{r, echo = F}
+library(gganimate)
+
+full.covid.states2 <- covid.states %>%
+  right_join(states, by = "fips") %>%
+  mutate(log_cases = log10(cases))
+
+full.covid.tib2 <- covid.counties %>%
+  right_join(counties, by = "fips") %>%
+  mutate(log_cases = log10(cases)) %>%
+  mutate(log_casesFull = replace_na(log_cases, 0))
+
+county_location_cases2 <- full.covid.tib2 %>%
+  group_by(fips, date) %>%
+  summarise(mean_cases = mean(cases),
+            mean_logcases = mean(log_casesFull),
+            county_lat = mean(lat), 
+            county_long = mean(long)) %>%
+  filter(mean_cases != "NA")
+
+
+
+
+p2 <- full.covid.states2 %>%
+  ggplot() +
+  geom_polygon(aes(long, lat, group = group), 
+               fill="gray95", 
+               color = "gray70",
+               size = 0.1) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  geom_point(data = county_location_cases2, 
+             aes(x = county_long, 
+                 y = county_lat, 
+                 size = mean_cases, 
+                 group = seq_along(date)), 
+             color = "red4", 
+             fill = adjustcolor("red1", alpha.f = 0.25),
+             shape = 21) +
+  transition_states(date) +
+  scale_size(breaks = size_breaks, range = c(.5,25)) +
+  theme_bw()
+p2
+
+```
+
+
+
+
+
+```{r, echo = F}
+p2 <- full.covid.states %>%
+  ggplot() +
+  geom_polygon(aes(long, lat, group = group), 
+               fill="gray95", 
+               color = "gray70",
+               size = 0.1) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  geom_point(data = county_location_cases2, 
+             aes(x = county_long, 
+                 y = county_lat, 
+                 size = mean_cases, 
+                 group = seq_along(date)), 
+             color = "red4", 
+             fill = adjustcolor("red1", alpha.f = 0.25),
+             shape = 21) +
+  transition_reveal(date) +
+  scale_size(breaks = size_breaks, range = c(.5,25)) +
+  theme_bw()
+p2
+```
+
+
+
+### States
+
+
+``` {r, echo = F}
+
+county_location_cases <- full.covid.tib %>%
+  group_by(fips) %>%
+  summarise(mean_cases = mean(cases),
+            mean_logcases = mean(log_casesFull),
+            county_lat = mean(lat), 
+            county_long = mean(long)) %>%
+  filter(mean_cases != "NA")
+
+size_breaks <- c(1,10,50, 100, 500, 1000)
+
+full.covid.states %>%
+  ggplot() +
+  geom_polygon(aes(long, lat, group = group), 
+               fill="gray95", 
+               color = "gray70",
+               size = 0.1) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  geom_point(data = county_location_cases, 
+             aes(x = county_long, y = county_lat, size = mean_cases), 
+             color = "red4", 
+             fill = adjustcolor("red1", alpha.f = 0.25),
+             shape = 21) +
+  scale_size(breaks = size_breaks, range = c(.5,25)) +
+  theme_bw()
+```
 
 
 

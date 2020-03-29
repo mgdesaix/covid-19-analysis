@@ -104,6 +104,7 @@ ui <- fluidPage(
                              ),
                              mainPanel(
                                plotOutput(outputId = "Statemap"),
+                               plotOutput(outputId = "Statemap2"),
                                plotOutput(outputId = "Stategraphs")
                              )
                            ))
@@ -181,8 +182,11 @@ server <- function(input, output) {
   })
   
   output$USmap2 <- renderPlot({
+    
+    slider.date <- input$date
+    
     full.covid.tib <- covid.counties %>%
-      filter(date == max(covid.counties$date)) %>%
+      filter(date == slider.date) %>%
       right_join(counties, by = "fips") %>%
       mutate(log_cases = log10(cases)) %>%
       mutate(log_casesFull = replace_na(log_cases, 0))
@@ -294,6 +298,37 @@ server <- function(input, output) {
       scale_size(breaks = size_breaks, 
                  range = c(.5,25),
                  name = "Cases") +
+      theme_bw() +
+      theme(
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        legend.position = "right"
+      )
+  })
+  
+  
+  output$Statemap2 <- renderPlot({
+    
+    input.state <- input$state
+    slider.date <- input$date2
+    
+    full.covid.tib <- covid.counties %>%
+      filter(date == slider.date) %>%
+      right_join(counties, by = "fips") %>%
+      mutate(log_cases = log10(cases)) %>%
+      mutate(log_casesFull = replace_na(log_cases, 0)) %>%
+      filter(state_name == input.state)
+    
+    
+    full.covid.tib %>%
+      ggplot(aes(long, lat, group = group, fill = cases)) +
+      geom_polygon(color = NA) +
+      coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+      labs(fill = "Cases") +
       theme_bw() +
       theme(
         panel.border = element_blank(),

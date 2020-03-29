@@ -105,6 +105,22 @@ full.covid.tib %>%
   
 ```
 
+### Map above by states
+
+```{r, echo =F}
+
+
+full.covid.tib %>%
+  filter(state_name == "Colorado")
+  ggplot(aes(long, lat, group = group, fill = log_casesFull)) +
+  geom_polygon(color = NA) +
+  coord_map(projection = "albers", lat0 = 39, lat1 = 45) +
+  labs(fill = "Number of Coronavirus Cases (Log10)") +
+  theme_bw()
+```
+
+
+
 ### Covid by states
 
 ```{r, echo = F}

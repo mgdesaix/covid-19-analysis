@@ -213,8 +213,10 @@ server <- function(input, output) {
     
     p1 <- daily.sum %>%
       ggplot() +
-      geom_point(aes(x = date, y = fullcases, color = "Cases")) +
-      geom_point(aes(x = date, y = fulldeaths, color = "Deaths")) +
+      geom_point(aes(x = date, y = fullcases, color = "Cases"), size = 2) +
+      geom_line(aes(x = date, y = fullcases, color = "Cases")) +
+      geom_point(aes(x = date, y = fulldeaths, color = "Deaths"), size = 2) +
+      geom_line(aes(x = date, y = fulldeaths, color = "Deaths")) +
       xlab("Date") +
       ylab("Cases and Deaths") +
       theme_bw() +
@@ -222,8 +224,10 @@ server <- function(input, output) {
     
     p2 <- daily.sum %>%
       ggplot() +
-      geom_point(aes(x = date, y = log10(fullcases), color = "Cases")) +
-      geom_point(aes(x = date, y = log10(fulldeaths), color = "Deaths")) +
+      geom_point(aes(x = date, y = log10(fullcases), color = "Cases"), size = 2) +
+      geom_line(aes(x = date, y = log10(fullcases), color = "Cases")) +
+      geom_point(aes(x = date, y = log10(fulldeaths), color = "Deaths"), size = 2) +
+      geom_line(aes(x = date, y = log10(fulldeaths), color = "Deaths")) +
       xlab("Date") +
       ylab("Cases and Deaths (Log10)") +
       theme_bw() +
@@ -238,8 +242,10 @@ server <- function(input, output) {
     
     p1 <- daily.new %>%
       ggplot() +
-      geom_point(aes(x = date, y = fullcases, color = "Cases")) +
-      geom_point(aes(x = date, y = fulldeaths, color = "Deaths")) +
+      geom_point(aes(x = date, y = fullcases, color = "Cases"), size = 2) +
+      geom_line(aes(x = date, y = fullcases, color = "Cases")) +
+      geom_point(aes(x = date, y = fulldeaths, color = "Deaths"), size = 2) +
+      geom_line(aes(x = date, y = fulldeaths, color = "Deaths")) +
       xlab("Date") +
       ylab("Cases and Deaths") +
       theme_bw() +
@@ -247,8 +253,10 @@ server <- function(input, output) {
     
     p2 <- daily.new %>%
       ggplot() +
-      geom_point(aes(x = date, y = log10(fullcases), color = "Cases")) +
-      geom_point(aes(x = date, y = log10(fulldeaths), color = "Deaths")) +
+      geom_point(aes(x = date, y = log10(fullcases), color = "Cases"), size = 2) +
+      geom_line(aes(x = date, y = log10(fullcases), color = "Cases")) +
+      geom_point(aes(x = date, y = log10(fulldeaths), color = "Deaths"), size = 2) +
+      geom_line(aes(x = date, y = log10(fulldeaths), color = "Deaths")) +
       xlab("Date") +
       ylab("Cases and Deaths (Log10)") +
       theme_bw() +
@@ -355,8 +363,10 @@ server <- function(input, output) {
     
     p1 <- state.sum %>%
       ggplot() +
-      geom_point(aes(x = date, y = fullcases, color = "Cases")) +
-      geom_point(aes(x = date, y = fulldeaths, color = "Deaths")) +
+      geom_point(aes(x = date, y = fullcases, color = "Cases"), size = 2) +
+      geom_line(aes(x = date, y = fullcases, color = "Cases")) +
+      geom_point(aes(x = date, y = fulldeaths, color = "Deaths"), size = 2) +
+      geom_line(aes(x = date, y = fulldeaths, color = "Deaths")) +
       xlab("Date") +
       ylab("Cases and Deaths") +
       theme_bw() +
@@ -364,8 +374,10 @@ server <- function(input, output) {
     
     p2 <- state.sum %>%
       ggplot() +
-      geom_point(aes(x = date, y = log10(fullcases), color = "Cases")) +
-      geom_point(aes(x = date, y = log10(fulldeaths), color = "Deaths")) +
+      geom_point(aes(x = date, y = log10(fullcases), color = "Cases"), size =2) +
+      geom_line(aes(x = date, y = log10(fullcases), color = "Cases")) +
+      geom_point(aes(x = date, y = log10(fulldeaths), color = "Deaths"), size =2) +
+      geom_line(aes(x = date, y = log10(fulldeaths), color = "Deaths")) +
       xlab("Date") +
       ylab("Cases and Deaths (Log10)") +
       theme_bw() +

@@ -103,9 +103,16 @@ ui <- fluidPage(
                                            value = max(covid.states$date))
                              ),
                              mainPanel(
+                               h3("Coronavirus Data Visualization"),
+                               textOutput("introduction2"),
                                plotOutput(outputId = "Statemap"),
                                plotOutput(outputId = "Statemap2"),
-                               plotOutput(outputId = "Stategraphs")
+                               h3("Cumulative Number of Cases and Deaths"),
+                               plotOutput(outputId = "Stategraphs_cumul"),
+                               h3("Daily Addition of Cases and Deaths"),
+                               plotOutput(outputId = "Stategraphs_day"),
+                               h3("State Data"),
+                               dataTableOutput(outputId = "table")
                              )
                            ))
       ) # close tabsetPanel
@@ -113,16 +120,20 @@ ui <- fluidPage(
 
 
 server <- function(input, output) {
+  
+  ## URL for NYT data
   data_url <- a("Click here for NYT data", href = "https://github.com/nytimes/covid-19-data")
   output$data_url <- renderUI({
     tagList(data_url)
   })
   
+  ## URL for my github page
   github_url <- a("Click here for code", href = "https://github.com/mgdesaix/covid-19-analysis")
   output$github_url <- renderUI({
     tagList(github_url)
   })
   
+  ## Text block on main page
   output$introduction <- renderText({
     paste("Here are some basic visualizations of data on coronavirus cases in the United States. There have been", 
           total.cases, "cases and ", total.deaths, "deaths as of ", today, ". Hopefully I will find time to update this with additional meaninful analyses.
@@ -132,6 +143,8 @@ server <- function(input, output) {
           in the number of reported cases and deaths.  Feel free to contact me at mgdesaix@gmail.com if you have any questions or would like to see specific analyses.
           You can find the code at my github page and the data are provided by the New York Times." )
   })
+  
+  ## U.S. map with points
   
   output$USmap <- renderPlot({
     
@@ -181,6 +194,8 @@ server <- function(input, output) {
       )
   })
   
+  ## U.S. map with county chloropleth
+  
   output$USmap2 <- renderPlot({
     
     slider.date <- input$date
@@ -208,6 +223,8 @@ server <- function(input, output) {
         legend.position = c(0.9, 0.4)
       )
   })
+  
+  ## Plots of cumulative cases and deaths
   
   output$USgraphs_cumul <- renderPlot({
     
@@ -238,6 +255,8 @@ server <- function(input, output) {
     
   })
   
+  # Plots of daily new cases and deaths
+  
   output$USgraphs_day <- renderPlot({
     
     p1 <- daily.new %>%
@@ -266,6 +285,19 @@ server <- function(input, output) {
     grid.arrange(p1, p2, ncol = 2)
     
   })
+  
+  ## Text block on state page
+  output$introduction2 <- renderText({
+    input.state <- input$state
+    state.df <- covid.states %>%
+      filter(state == input.state)
+    state.cases <- state.df$cases[nrow(state.df)]
+    state.deaths <- state.df$deaths[nrow(state.df)]
+    
+    paste("As of ", today, " in ", input.state, " there have been ", state.cases, " cases and ", state.deaths, " deaths.")
+  })
+  
+  ## State map with red points
   
   output$Statemap <- renderPlot({
     
@@ -349,7 +381,7 @@ server <- function(input, output) {
       )
   })
   
-  output$Stategraphs <- renderPlot({
+  output$Stategraphs_cumul <- renderPlot({
     
     input.state <- input$state
     
@@ -386,6 +418,56 @@ server <- function(input, output) {
     
     grid.arrange(p1, p2, ncol = 2)
     
+  })
+  
+  output$Stategraphs_day <- renderPlot({
+    
+    input.state <- input$state
+    
+    # State summary
+    state.sum <- covid.counties %>%
+      filter(state == input.state) %>%
+      group_by(date) %>%
+      summarise(fullcases = sum(cases),
+                fulldeaths = sum(deaths))
+    
+    state.sum2 <- data.frame(date = state.sum[2:nrow(state.sum), 1],
+                         fullcases = state.sum[2:nrow(state.sum), 2] - state.sum[1:(nrow(state.sum)-1), 2],
+                         fulldeaths = state.sum[2:nrow(state.sum), 3] - state.sum[1:(nrow(state.sum)-1), 3])
+    
+    
+    p1 <- state.sum2 %>%
+      ggplot() +
+      geom_point(aes(x = date, y = fullcases, color = "Cases"), size = 2) +
+      geom_line(aes(x = date, y = fullcases, color = "Cases")) +
+      geom_point(aes(x = date, y = fulldeaths, color = "Deaths"), size = 2) +
+      geom_line(aes(x = date, y = fulldeaths, color = "Deaths")) +
+      xlab("Date") +
+      ylab("Cases and Deaths") +
+      theme_bw() +
+      theme(legend.position = "none")
+    
+    p2 <- state.sum2 %>%
+      ggplot() +
+      geom_point(aes(x = date, y = log10(fullcases), color = "Cases"), size =2) +
+      geom_line(aes(x = date, y = log10(fullcases), color = "Cases")) +
+      geom_point(aes(x = date, y = log10(fulldeaths), color = "Deaths"), size =2) +
+      geom_line(aes(x = date, y = log10(fulldeaths), color = "Deaths")) +
+      xlab("Date") +
+      ylab("Cases and Deaths (Log10)") +
+      theme_bw() +
+      theme(legend.title = element_blank(),
+            legend.position = "right")
+    
+    grid.arrange(p1, p2, ncol = 2)
+    
+  })
+  
+  output$table <- renderDataTable({
+    input.state <- input$state
+    
+    covid.counties %>%
+      filter(state == input.state)
   })
 }
 
